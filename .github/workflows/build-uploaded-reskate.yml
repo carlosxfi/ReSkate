@@ -2,6 +2,10 @@ name: Build uploaded ReSkate test source
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-uploaded-reskate.yml'
 
 permissions:
   contents: read
