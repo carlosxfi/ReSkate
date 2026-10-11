@@ -19,7 +19,7 @@ jobs:
 
       - name: Extract experimental source
         shell: pwsh
-        run: Expand-Archive -LiteralPath ReSkate-DroidDeck-experimental-source.zip -DestinationPath experimental-source
+        run: Expand-Archive -LiteralPath ReSkate-DroidDeck-experimental-source-v2.zip -DestinationPath experimental-source
 
       - name: Configure Windows x64
         working-directory: experimental-source/ReSkate-main
