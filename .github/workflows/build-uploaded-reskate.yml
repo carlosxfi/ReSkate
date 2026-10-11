@@ -1,0 +1,44 @@
+name: Build uploaded ReSkate test source
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract experimental source
+        shell: pwsh
+        run: Expand-Archive -LiteralPath ReSkate-DroidDeck-experimental-source.zip -DestinationPath experimental-source
+
+      - name: Configure Windows x64
+        working-directory: experimental-source/ReSkate-main
+        run: cmake --preset vs2022-x64 -DDINGOSDK_LAUNCHER_AUTO_UPDATE=OFF
+
+      - name: Build matching launcher and runtime
+        working-directory: experimental-source/ReSkate-main
+        run: cmake --build --preset release --target dingosdk_launcher dingosdk_runtime --parallel 4
+
+      - name: Record checksums
+        shell: pwsh
+        run: |
+          Get-FileHash experimental-source/ReSkate-main/build/vs2022-x64/Release/ReSkateLauncher.exe, experimental-source/ReSkate-main/build/vs2022-x64/Release/ReSkate.dll -Algorithm SHA256 |
+            Format-Table -AutoSize | Out-String -Width 240 |
+            Set-Content experimental-source/ReSkate-main/build/vs2022-x64/Release/SHA256.txt
+
+      - name: Upload test binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReSkate-DroidDeck-test-binaries
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            experimental-source/ReSkate-main/build/vs2022-x64/Release/ReSkateLauncher.exe
+            experimental-source/ReSkate-main/build/vs2022-x64/Release/ReSkate.dll
+            experimental-source/ReSkate-main/build/vs2022-x64/Release/SHA256.txt
